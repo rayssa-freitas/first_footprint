@@ -1,4 +1,4 @@
-const VERSAO = 'v18.1';
+const VERSAO = 'v18.2';
 // ---------- utilities ----------
 const $ = (s) => document.querySelector(s);
 const api = async (url, opt) => {
@@ -116,6 +116,21 @@ world
   .onLabelClick(d => d.celula && abrirCelula(d.celula))
   .onGlobeClick(({ lat, lng }) => { if ($('#modoRegiao').checked) marcarRegiao(lat, lng); else { definirPonto(lat, lng); pontoLivre(lat, lng); } });
 window.addEventListener('resize', ajustarGlobo);
+// gentle Earth rotation: pauses while the user interacts, resumes after 25 s idle; off with reduced motion or the ⏸ button
+const GIRO = { on: !matchMedia('(prefers-reduced-motion: reduce)').matches, t: null };
+world.controls().autoRotateSpeed = 0.35;
+function giroAtualiza() {
+  world.controls().autoRotate = GIRO.on && !GIRO.t;
+  const b = $('#zGiro'); if (!b) return;
+  b.textContent = GIRO.on ? '⏸' : '▶'; b.setAttribute('aria-pressed', String(!GIRO.on));
+  b.setAttribute('aria-label', GIRO.on ? 'Pause globe rotation' : 'Resume globe rotation'); b.title = b.getAttribute('aria-label');
+}
+function giroPausa() { clearTimeout(GIRO.t); GIRO.t = setTimeout(() => { GIRO.t = null; giroAtualiza(); }, 25000); giroAtualiza(); }
+['pointerdown', 'wheel', 'touchstart'].forEach(ev => el.addEventListener(ev, giroPausa, { passive: true }));
+document.addEventListener('keydown', giroPausa);
+{ const pov = world.pointOfView.bind(world); world.pointOfView = (...a) => { if (a.length) giroPausa(); return pov(...a); }; }
+if ($('#zGiro')) $('#zGiro').onclick = () => { GIRO.on = !GIRO.on; clearTimeout(GIRO.t); GIRO.t = null; giroAtualiza(); };
+giroAtualiza();
 
 let camadaCand = [], camadaRegiao = [], camadaPonto = [], camadaSim = [];
 let TEM_GRADE = false;
