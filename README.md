@@ -114,4 +114,18 @@ tests/                             qa.py (live API) and teste_sintetico.py (offl
 
 Folder and file names are kept in Portuguese (the original working language of the team); everything the user sees is in English.
 
-Validation: the known analogs (blue labels) should score high in the matching profile. Atacama comes out #1 in the Mars arid-plain profile (0.83).
+Validation: the known analogs (blue labels) should score high in the matching profile. Atacama comes out #1 in the Mars arid-plain profile (0.79).
+
+## Use of Super Intelligence (SI) — disclosure
+
+As required by the NASA Space Apps Challenge, this project discloses where SI tools were used:
+
+| Element | SI tool | How it was used |
+|---|---|---|
+| Code | Claude (Anthropic) | Helped write, refactor and debug the Python and JavaScript code. Every file in this repository was produced with SI assistance and reviewed/tested by the team (`tests/qa.py`, `tests/teste_sintetico.py`). |
+| Text | Claude (Anthropic) | Drafted the README, in-app texts, slide deck and video script. |
+| Logo | Claude (Anthropic) | The First Footprint logo is SI-generated. It is marked **"Logo: SI-generated"** in the slides and the video. |
+| Video | Claude (Anthropic) + Canva | Claude assembled the cuts; final editing in Canva. The video carries a visible "Logo: SI-generated" watermark. |
+| Audio | ElevenLabs | The video narration voice is SI-generated. |
+
+**Data is not SI-generated.** Every number in the app comes from real, open datasets (NASA MODIS, MERRA-2, NASA POWER, NOAA ETOPO, GLiM, GHSL, WDPA, Open-Meteo/CAMS, GBIF), listed in the *Data* section above. The SI-generated logo does not use or modify any NASA logo, flag or mission identifier. NASA images and footage in the video are original, unmodified material from the NASA Image and Video Library.
