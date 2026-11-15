@@ -276,13 +276,25 @@ GLIM_NOMES = {"su": "unconsolidated sediments", "vb": "basic volcanic (basalt)",
               "nd": "no data", "ig": "ice and glaciers"}
 
 
+GLIM_NOMES = {"su": "unconsolidated", "vb": "basic volcanic", "ss": "siliciclastic", "pb": "basic plutonic",
+              "sm": "mixed sediment", "sc": "carbonate", "va": "acid volcanic", "mt": "metamorphic",
+              "pa": "acid plutonic", "vi": "intermediate volcanic", "wb": "water", "py": "pyroclastic",
+              "pi": "intermediate plutonic", "ev": "evaporite", "nd": "no data", "ig": "ice"}
+
+
 def _legenda_glim(z):
     """Looks for a 'code + abbreviation' legend in the zip text files."""
     import re
     leg = {}
     for n in z.namelist():
         if n.lower().endswith((".txt", ".csv", ".dat", ".xml")) and z.getinfo(n).file_size < 200_000:
-            txt = z.read(n).decode("latin-1", errors="ignore")
+            txt = z.read(n).decode("latin-1", errors="ignore").lower()
+            for linha in txt.splitlines():   # "1  Unconsolidated sediments" style
+                m = re.match(r"\s*(\d{1,2})\D+?([a-z].*)$", linha)
+                if m:
+                    for chave, nome in GLIM_NOMES.items():
+                        if nome in m.group(2) and chave not in leg:
+                            leg[chave] = int(m.group(1)); break
             for a, b in re.findall(r"\b(\d{1,2})\s*[=:;,\t ]\s*([a-z]{2})\b", txt):
                 if b in GLIM_PADRAO:
                     leg[b] = int(a)

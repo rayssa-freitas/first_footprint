@@ -1,4 +1,4 @@
-const VERSAO = 'v16';
+const VERSAO = 'v17';
 // ---------- utilities ----------
 const $ = (s) => document.querySelector(s);
 const api = async (url, opt) => {
@@ -56,10 +56,11 @@ function corPct(p) {
 function octogono(lat, lon, raioGraus, props) {
   const coords = [];
   const k = 1 / Math.max(Math.cos(lat * Math.PI / 180), 0.05);
-  for (let i = 0; i <= 8; i++) {
+  for (let i = 0; i < 8; i++) {
     const a = (Math.PI / 8) - i * (Math.PI / 4);
     coords.push([lon + raioGraus * k * Math.cos(a), lat + raioGraus * Math.sin(a)]);
   }
+  coords.push([...coords[0]]);   // ring must close exactly (GeoJSON)
   return { type: 'Feature', properties: props, geometry: { type: 'Polygon', coordinates: [coords] } };
 }
 
@@ -105,7 +106,8 @@ world
     if (p.protegido > 0) t += `<br>⚠ ${fmt(p.protegido, 0)}% protected area (WDPA)`;
     if (p.viab_txt) t += `<br>${p.viab_txt}`;
     return t; })
-  .onPolygonClick(d => { const p = d.properties;
+  .onPolygonClick((d, ev, c) => { const p = d.properties;
+    if ($('#modoRegiao').checked && c) { marcarRegiao(c.lat, c.lng); return; }
     if (p.tipo === 'celula' && TEM_GRADE) abrirCelula(p.id);
     else { definirPonto(p.lat, p.lon); pontoLivre(p.lat, p.lon); } })
   .labelLat('lat').labelLng('lon').labelText('nome').labelSize(0.9).labelDotRadius(0.5)
@@ -156,6 +158,11 @@ async function iniciar() {
   $('#perfil').innerHTML = Object.entries(perfis).map(([k, v]) => `<option value="${k}">${v.nome}</option>`).join('');
   $('#perfil').onchange = carregar;
   $('#raio').oninput = () => $('#raioTxt').textContent = `${$('#raio').value} km`;
+  // radius changed with a region already marked → redraw it with the new radius
+  $('#raio').onchange = () => { if (centroRegiao && $('#modoRegiao').checked) marcarRegiao(...centroRegiao); };
+  // unchecking 'mark region' clears the region and its cells
+  $('#modoRegiao').onchange = () => { if (!$('#modoRegiao').checked && centroRegiao) {
+    centroRegiao = null; camadaRegiao = []; camadaCand = camadaCand.filter(f => !['celula', 'grade'].includes(f.properties.tipo) || f.properties.score_regiao === undefined); redesenhar(); } };
   await carregar();
   if (Object.keys(EQUIP).length) montarSorteio();
 }
@@ -218,14 +225,16 @@ async function abrirCelula(id, voar = false) {
 }
 
 // ---------- region ----------
+let centroRegiao = null;
 async function marcarRegiao(lat, lon) {
+  centroRegiao = [lat, lon];
   const raio = +$('#raio').value;
   camadaRegiao = [octogono(lat, lon, raio / 111, { tipo: 'regiao' })];
   const r = await api(`/api/regiao?lat=${lat}&lon=${lon}&raio_km=${raio}&perfil=${perfil()}`);
   definirPonto(lat, lon);
   camadaCand = r.celulas.length
-    ? r.celulas.map(c => octogono(c.lat, c.lon, 0.48, { ...c, tipo: 'celula' }))
-    : pontosGrade(lat, lon, raio).map(c => octogono(c.lat, c.lon, 0.48, { ...c, tipo: 'grade' }));
+    ? r.celulas.map(c => octogono(c.lat, c.lon, 0.48, { ...c, tipo: 'celula', score_regiao: c.score }))
+    : pontosGrade(lat, lon, raio).map(c => octogono(c.lat, c.lon, 0.48, { ...c, tipo: 'grade', score_regiao: null }));
   redesenhar();
   abrirAba('aba-sim');
   if (!r.celulas.length) {
