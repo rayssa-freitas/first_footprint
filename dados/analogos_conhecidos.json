@@ -1,0 +1,58 @@
+[
+ {
+  "nome": "Atacama Desert (Yungay)",
+  "lat": -24.08,
+  "lon": -70.0,
+  "corpo": "Mars",
+  "uso": "Sensors, rovers, search for life"
+ },
+ {
+  "nome": "Mojave Desert",
+  "lat": 35.0,
+  "lon": -116.0,
+  "corpo": "Mars/Moon",
+  "uso": "Landing, navigation"
+ },
+ {
+  "nome": "Death Valley",
+  "lat": 36.5,
+  "lon": -117.0,
+  "corpo": "Mars",
+  "uso": "Geology, sediments"
+ },
+ {
+  "nome": "Haughton Crater (Devon Island)",
+  "lat": 75.38,
+  "lon": -89.68,
+  "corpo": "Mars/Moon",
+  "uso": "Polar impact crater"
+ },
+ {
+  "nome": "Meteor Crater (Arizona)",
+  "lat": 35.03,
+  "lon": -111.02,
+  "corpo": "Moon",
+  "uso": "Crater rims, Apollo training"
+ },
+ {
+  "nome": "Iceland (lava fields)",
+  "lat": 64.9,
+  "lon": -16.8,
+  "corpo": "Moon/Mars",
+  "uso": "Basalt, landing plume"
+ },
+ {
+  "nome": "Hawaii (Mauna Kea)",
+  "lat": 19.82,
+  "lon": -155.47,
+  "corpo": "Moon/Mars",
+  "uso": "Volcanic regolith, ISRU"
+ },
+ {
+  "nome": "McMurdo Dry Valleys",
+  "lat": -77.5,
+  "lon": 162.0,
+  "corpo": "Mars",
+  "uso": "Cold desert, permafrost"
+ }
+]

@@ -1,0 +1,311 @@
+{
+  "_como_ler": "No place on Earth reaches the absolute values of the Moon or Mars. Each variable defines 'ideal' (the Earth value closest to the target environment: similarity 1) and 'pior' (worst: similarity 0); it is linear in between. 'referencia' gives the real planetary value and its source.",
+  "perfis": {
+    "marte_planicie": {
+      "nome": "Mars · Arid plain with exposed regolith and wind-blown dust (analog: Gale / Jezero)",
+      "corpo": "Marte",
+      "variaveis": {
+        "ndvi_max": {
+          "ideal": 0.05,
+          "pior": 0.3,
+          "peso": 3,
+          "referencia": "No vegetation"
+        },
+        "precip_mm_ano": {
+          "ideal": 0,
+          "pior": 250,
+          "peso": 3,
+          "referencia": "No liquid rain (pressure ~6 hPa)"
+        },
+        "umidade_rel_pct": {
+          "ideal": 5,
+          "pior": 60,
+          "peso": 2,
+          "referencia": "Vapour column ~10 precipitable µm (MGS/TES)"
+        },
+        "vapor_agua_cm": {
+          "ideal": 0.2,
+          "pior": 2.5,
+          "peso": 2,
+          "referencia": "Typical Earth: 1–5 cm; Mars: ~0.001 cm"
+        },
+        "amplitude_termica_c": {
+          "ideal": 35,
+          "pior": 5,
+          "peso": 2,
+          "referencia": "Daily cycle of tens of K (MSL/REMS)"
+        },
+        "lst_min_c": {
+          "ideal": -30,
+          "pior": 15,
+          "peso": 1,
+          "referencia": "Mean ~210 K = -63 °C (NASA Mars Fact Sheet)"
+        },
+        "arido_pct": {
+          "ideal": 90,
+          "pior": 10,
+          "peso": 3,
+          "referencia": "Exposed rock/regolith surface"
+        },
+        "poeira_ugm3": {
+          "ideal": 150,
+          "pior": 5,
+          "peso": 1,
+          "referencia": "Permanent suspended dust; global dust storms"
+        },
+        "nuvem_frac": {
+          "ideal": 0.1,
+          "pior": 0.7,
+          "peso": 1,
+          "referencia": "Thin, rare clouds"
+        },
+        "pressao_hpa": {
+          "ideal": 600,
+          "pior": 1013,
+          "peso": 1,
+          "referencia": "6.36 hPa (NASA Mars Fact Sheet) — Earth is >90x higher"
+        }
+      }
+    },
+    "marte_polar": {
+      "nome": "Mars · High-latitude periglacial terrain with permafrost (analog: Phoenix)",
+      "corpo": "Marte",
+      "variaveis": {
+        "ndvi_max": {
+          "ideal": 0.05,
+          "pior": 0.3,
+          "peso": 3,
+          "referencia": "No vegetation"
+        },
+        "precip_mm_ano": {
+          "ideal": 0,
+          "pior": 300,
+          "peso": 2,
+          "referencia": "Ice/frost deposition, no rain"
+        },
+        "lst_min_c": {
+          "ideal": -50,
+          "pior": 0,
+          "peso": 3,
+          "referencia": "Polar winter below -120 °C"
+        },
+        "t2m_c": {
+          "ideal": -25,
+          "pior": 10,
+          "peso": 2,
+          "referencia": "Mean ~-63 °C (NASA Mars Fact Sheet)"
+        },
+        "umidade_rel_pct": {
+          "ideal": 10,
+          "pior": 70,
+          "peso": 1,
+          "referencia": "Very dry atmosphere"
+        },
+        "arido_pct": {
+          "ideal": 60,
+          "pior": 0,
+          "peso": 2,
+          "referencia": "Exposed soil over ground ice (not an ice sheet)"
+        },
+        "vento_medio_ms": {
+          "ideal": 8,
+          "pior": 1,
+          "peso": 1,
+          "referencia": "Active wind processes"
+        }
+      }
+    },
+    "lua_polo_sul": {
+      "nome": "Moon · South pole: grazing sunlight and extreme cold (Artemis target region)",
+      "corpo": "Lua",
+      "variaveis": {
+        "abs_lat": {
+          "ideal": 80,
+          "pior": 45,
+          "peso": 3,
+          "referencia": "Sun a few degrees above the horizon, long shadows"
+        },
+        "lst_min_c": {
+          "ideal": -60,
+          "pior": -5,
+          "peso": 3,
+          "referencia": "Permanently shadowed craters ~25–50 K (LRO/Diviner)"
+        },
+        "ndvi_max": {
+          "ideal": 0.02,
+          "pior": 0.2,
+          "peso": 2,
+          "referencia": "No life"
+        },
+        "umidade_rel_pct": {
+          "ideal": 10,
+          "pior": 70,
+          "peso": 1,
+          "referencia": "Vacuum; water ice in cold traps (LRO/LEND)"
+        },
+        "nuvem_frac": {
+          "ideal": 0.15,
+          "pior": 0.8,
+          "peso": 2,
+          "referencia": "No atmosphere: always clear sky"
+        },
+        "pressao_hpa": {
+          "ideal": 600,
+          "pior": 1013,
+          "peso": 1,
+          "referencia": "Vacuum (~10^-12 hPa)"
+        },
+        "rugosidade_m": {
+          "ideal": 500,
+          "pior": 20,
+          "peso": 1,
+          "referencia": "Rugged crater-rim terrain (LRO/LOLA)"
+        }
+      }
+    },
+    "lua_mare": {
+      "nome": "Moon · Basaltic mare with regolith and low slope (analog: Apollo 11 / 15)",
+      "corpo": "Lua",
+      "variaveis": {
+        "ndvi_max": {
+          "ideal": 0.02,
+          "pior": 0.25,
+          "peso": 3,
+          "referencia": "No life"
+        },
+        "arido_pct": {
+          "ideal": 95,
+          "pior": 20,
+          "peso": 3,
+          "referencia": "Exposed regolith; confirm basalt with a geological map"
+        },
+        "precip_mm_ano": {
+          "ideal": 0,
+          "pior": 200,
+          "peso": 2,
+          "referencia": "No liquid water"
+        },
+        "amplitude_termica_c": {
+          "ideal": 40,
+          "pior": 5,
+          "peso": 2,
+          "referencia": "Equator: ~95 K to ~390 K (NASA Moon Fact Sheet / Diviner)"
+        },
+        "nuvem_frac": {
+          "ideal": 0.1,
+          "pior": 0.7,
+          "peso": 2,
+          "referencia": "No atmosphere"
+        },
+        "umidade_rel_pct": {
+          "ideal": 5,
+          "pior": 60,
+          "peso": 1,
+          "referencia": "Vacuum"
+        },
+        "declividade_graus": {
+          "ideal": 3,
+          "pior": 15,
+          "peso": 1,
+          "referencia": "Lunar maria: flat, with small craters"
+        }
+      }
+    }
+  },
+  "operacional": {
+    "_nota": "Suitability for landing/mobility tests. Independent of environmental similarity.",
+    "variaveis": {
+      "declividade_graus": {
+        "ideal": 2,
+        "pior": 15,
+        "peso": 3
+      },
+      "nuvem_frac": {
+        "ideal": 0.1,
+        "pior": 0.7,
+        "peso": 2
+      },
+      "vento_medio_ms": {
+        "ideal": 2,
+        "pior": 10,
+        "peso": 2
+      },
+      "precip_mm_ano": {
+        "ideal": 0,
+        "pior": 500,
+        "peso": 1
+      },
+      "aod_550": {
+        "ideal": 0.05,
+        "pior": 0.6,
+        "peso": 1
+      }
+    }
+  },
+  "limitacoes_fixas": {
+    "Marte": [
+      {
+        "texto": "Gravity 3.71 m/s² (0.379 of Earth's) — cannot be reproduced in the field",
+        "fonte": "NASA NSSDC Mars Fact Sheet",
+        "url": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/marsfact.html"
+      },
+      {
+        "texto": "Pressure 6.36 mb at mean radius (4.0–8.7 mb depending on season); Earth ≈ 1013 mb",
+        "fonte": "NASA NSSDC Mars Fact Sheet",
+        "url": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/marsfact.html"
+      },
+      {
+        "texto": "Mean temperature ~210 K (-63 °C)",
+        "fonte": "NASA NSSDC Mars Fact Sheet",
+        "url": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/marsfact.html"
+      },
+      {
+        "texto": "Radiation: no global magnetic field or ozone layer — radiation environment cannot be reproduced",
+        "fonte": "NASA Space Apps Challenge 2026 (considerations)",
+        "url": "https://www.spaceappschallenge.org"
+      }
+    ],
+    "Lua": [
+      {
+        "texto": "Gravity 1.62 m/s² (0.165 of Earth's)",
+        "fonte": "NASA NSSDC Moon Fact Sheet",
+        "url": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/moonfact.html"
+      },
+      {
+        "texto": "Vacuum: night-time pressure ~3×10⁻¹⁵ bar",
+        "fonte": "NASA NSSDC Moon Fact Sheet",
+        "url": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/moonfact.html"
+      },
+      {
+        "texto": "Equatorial temperature from 95 K to 390 K over the lunar day",
+        "fonte": "NASA NSSDC Moon Fact Sheet",
+        "url": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/moonfact.html"
+      },
+      {
+        "texto": "Direct solar and cosmic radiation, no atmosphere",
+        "fonte": "NASA NSSDC Moon Fact Sheet",
+        "url": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/moonfact.html"
+      }
+    ]
+  },
+  "fontes": [
+    "NASA NSSDC Mars Fact Sheet — nssdc.gsfc.nasa.gov/planetary/factsheet/marsfact.html",
+    "NASA NSSDC Moon Fact Sheet — nssdc.gsfc.nasa.gov/planetary/factsheet/moonfact.html",
+    "LRO Diviner (polar temperatures) — PDS Geosciences Node",
+    "LRO LOLA / LEND — PDS",
+    "MSL REMS (Curiosity) — PDS Atmospheres Node",
+    "MGS TES — water vapour and thermal inertia"
+  ],
+  "limitacoes_metodo": [
+    {
+      "texto": "CO₂ is informational only: global mean ~423 ppm (Sep 2025), rising ~2–3 ppm/year — regional differences are a few ppm, irrelevant next to the ~95% CO₂ on Mars",
+      "fonte": "NOAA Global Monitoring Laboratory",
+      "url": "https://gml.noaa.gov/ccgg/trends/global.html"
+    },
+    {
+      "texto": "The 1° grid (~110 km) is for screening; the exact spot needs a 30 m DEM and a field visit",
+      "fonte": "Product resolution (MOD08_M3 1°, MERRA-2 0.5°×0.625°)",
+      "url": "https://ladsweb.modaps.eosdis.nasa.gov/missions-and-measurements/products/MOD08_M3"
+    }
+  ]
+}

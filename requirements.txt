@@ -1,0 +1,8 @@
+# Website / API (this is all the hosted app needs)
+fastapi>=0.110
+uvicorn>=0.27
+pydantic>=2.5
+requests>=2.31
+numpy>=1.26
+pandas>=2.1
+pyarrow>=14

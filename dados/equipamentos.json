@@ -1,0 +1,177 @@
+{
+  "_nota": "Values with a source come from the official spec sheet. Fields listed under 'estimados' (estimated) are NOT published by the manufacturer: they are conservative assumptions for the simulation.",
+  "equipamentos": {
+    "dji_m350": {
+      "nome": "DJI Matrice 350 RTK (mapping drone)",
+      "tipo": "drone",
+      "uso": "Aerial mapping of analog terrain, optical navigation, LiDAR survey",
+      "params": {
+        "vento_max_ms": 12,
+        "rajada_max_ms": 12,
+        "temp_min_c": -20,
+        "temp_max_c": 50,
+        "umidade_max_pct": 95,
+        "chuva_max_mm_h": 1.0,
+        "nuvem_max_pct": 60,
+        "nuvem_tipo": "baixas_medias",
+        "visibilidade_min_m": 5000,
+        "poeira_max_ugm3": 200,
+        "luz_dia": true,
+        "elev_solar_min_graus": 5,
+        "duracao_h": 1
+      },
+      "fonte": {
+        "texto": "DJI Enterprise – Matrice 350 RTK Specs (wind 12 m/s, -20 to 50 °C, IP55)",
+        "url": "https://enterprise.dji.com/matrice-350-rtk/specs"
+      },
+      "estimados": [
+        "max gust (same as max wind)",
+        "max rain (IP55 = light rain)",
+        "min visibility (line-of-sight flight)",
+        "max dust",
+        "clouds"
+      ]
+    },
+    "spot": {
+      "nome": "Boston Dynamics Spot (quadruped surface robot)",
+      "tipo": "rover",
+      "uso": "Mobility on rough terrain, surface inspection and sampling",
+      "params": {
+        "vento_max_ms": 15,
+        "rajada_max_ms": 20,
+        "temp_min_c": -20,
+        "temp_max_c": 45,
+        "umidade_max_pct": 95,
+        "chuva_max_mm_h": 2.0,
+        "nuvem_max_pct": 100,
+        "nuvem_tipo": "todas",
+        "visibilidade_min_m": 500,
+        "poeira_max_ugm3": 300,
+        "luz_dia": true,
+        "elev_solar_min_graus": -6,
+        "duracao_h": 2,
+        "declividade_max_graus": 30
+      },
+      "fonte": {
+        "texto": "Boston Dynamics – Spot specifications (-20 to 45 °C, IP54, ±30° slope, lighting > 2 lux)",
+        "url": "https://dev.bostondynamics.com/docs/concepts/about_spot"
+      },
+      "estimados": [
+        "wind and gust (not published)",
+        "max rain (IP54 = splashes)",
+        "min sun -6° (civil twilight ≈ lighting > 2 lux)",
+        "max dust"
+      ]
+    },
+    "falcon9": {
+      "nome": "SpaceX Falcon 9 (launch weather criteria)",
+      "tipo": "lancamento",
+      "uso": "Reference for launch constraints; useful to compare launch windows between sites",
+      "params": {
+        "vento_max_ms": 15.4,
+        "rajada_max_ms": 20,
+        "temp_min_c": -10,
+        "temp_max_c": 40,
+        "umidade_max_pct": 100,
+        "chuva_max_mm_h": 0.1,
+        "nuvem_max_pct": 70,
+        "nuvem_tipo": "baixas_medias",
+        "visibilidade_min_m": 5000,
+        "luz_dia": false,
+        "elev_solar_min_graus": -90,
+        "duracao_h": 1
+      },
+      "fonte": {
+        "texto": "NASA – Falcon 9 Launch Weather Criteria (2012): sustained wind > 30 knots (15.4 m/s) at 49 m on the pad = no-go",
+        "url": "https://en.wikipedia.org/wiki/Launch_commit_criteria"
+      },
+      "estimados": [
+        "wind measured at 10 m (official criterion is at 49 m)",
+        "clouds: proxy for the cumulus/anvil rules",
+        "temperature",
+        "gust"
+      ]
+    },
+    "xodiac": {
+      "nome": "Astrobotic Xodiac (VTVL test lander, Mojave)",
+      "tipo": "pouso",
+      "uso": "Powered descent and landing tests, navigation sensors and plume–surface interaction",
+      "params": {
+        "vento_max_ms": 8,
+        "rajada_max_ms": 10,
+        "temp_min_c": -5,
+        "temp_max_c": 40,
+        "umidade_max_pct": 90,
+        "chuva_max_mm_h": 0.0,
+        "nuvem_max_pct": 50,
+        "nuvem_tipo": "baixas_medias",
+        "visibilidade_min_m": 5000,
+        "poeira_max_ugm3": 150,
+        "luz_dia": true,
+        "elev_solar_min_graus": 10,
+        "duracao_h": 2,
+        "declividade_max_graus": 10
+      },
+      "fonte": {
+        "texto": "Astrobotic – Xodiac Payload User's Guide (500 m altitude, 27 m/s speed, daytime operations ~9am–5pm; weather limits not published)",
+        "url": "https://dev.astrobotic.com/wp-content/uploads/2025/07/Payload-Users-Guide-Xodiac.pdf"
+      },
+      "estimados": [
+        "ALL weather limits (the guide says weather limits flights, with no numbers)",
+        "max slope"
+      ]
+    }
+  },
+  "locais_terrestres": [
+    {
+      "nome": "Sahara – southern Algeria",
+      "lat": 25.5,
+      "lon": 5.5
+    },
+    {
+      "nome": "Sahara – Libya/Niger",
+      "lat": 23.5,
+      "lon": 12.5
+    },
+    {
+      "nome": "Western Desert – Egypt",
+      "lat": 24.5,
+      "lon": 28.5
+    },
+    {
+      "nome": "Tarim Basin / Lop Nur – China",
+      "lat": 40.5,
+      "lon": 92.5
+    },
+    {
+      "nome": "Qaidam Basin – China",
+      "lat": 37.5,
+      "lon": 94.5
+    },
+    {
+      "nome": "Atacama – Chile",
+      "lat": -25.5,
+      "lon": -68.5
+    },
+    {
+      "nome": "Mojave – USA",
+      "lat": 35.0,
+      "lon": -116.0
+    },
+    {
+      "nome": "McMurdo Dry Valleys – Antarctica",
+      "lat": -77.5,
+      "lon": 162.0
+    },
+    {
+      "nome": "Haughton Crater – Canada",
+      "lat": 75.38,
+      "lon": -89.68
+    },
+    {
+      "nome": "Lava fields – Iceland",
+      "lat": 64.9,
+      "lon": -16.8
+    }
+  ]
+}

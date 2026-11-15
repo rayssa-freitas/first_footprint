@@ -1,0 +1,12 @@
+@"
+.venv/
+__pycache__/
+*.pyc
+dados/brutos/
+dados/cache/
+dados/resultados/
+_netrc
+.netrc
+.env
+"@ | Set-Content .gitignore -Encoding utf8dados/log_terminal.txt
+dados/log_terminal.txt
