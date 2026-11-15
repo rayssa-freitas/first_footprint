@@ -1,4 +1,4 @@
-const VERSAO = 'v17';
+const VERSAO = 'v18';
 // ---------- utilities ----------
 const $ = (s) => document.querySelector(s);
 const api = async (url, opt) => {
@@ -475,6 +475,8 @@ function montarSorteio() {
   $('#sEq').innerHTML = Object.entries(EQUIP).map(([k, e]) =>
       `<label class="chkl"><input type="checkbox" name="seq" value="${k}" checked> ${e.nome}</label>`).join('');
 }
+const LIMITE = {"wind": "wind", "gust": "gusts", "wind_180m": "wind at 180 m", "temperature": "temperature", "humidity": "humidity", "rain": "rain", "clouds": "clouds", "visibility": "visibility", "sun": "daylight/sun", "dust": "dust", "aod": "aerosols"};
+const limTxt = k => k ? (LIMITE[k] || k) : '';
 const sorteia = a => a[Math.floor(Math.random() * a.length)];
 function diaAleatorio() {
   const lim = FIM_DISP || new Date(Date.now() - 3 * 864e5).toISOString().slice(0, 10);
@@ -491,7 +493,14 @@ async function poolPontos() {
   const sel = [...document.querySelectorAll('input[name=sorig]:checked')].map(i => i.value);
   const k = +$('#sK').value || 25, pool = [];
   for (const o of sel) {
-    if (o === 'terra') { TERRA.forEach(t => pool.push({ ...t, origem: 'Favorable Earth site', sim: null })); continue; }
+    if (o === 'terra') {
+      for (const t of TERRA) {
+        let sim = null;
+        try { const r = await api(`/api/regiao?lat=${t.lat}&lon=${t.lon}&raio_km=120&perfil=${perfil()}`); if (r.celulas && r.celulas.length) sim = r.celulas[0].score; } catch (e) {}
+        pool.push({ ...t, origem: 'Favorable Earth site', sim });
+      }
+      continue;
+    }
     const c = await api(`/api/candidatas?perfil=${o}&n=${k}&so_remotas=true`);
     const nome = PERFIS[o].nome.split('(')[0].split(':')[0].trim();
     c.forEach(x => pool.push({ nome: `cell ${x.id}`, lat: x.lat, lon: x.lon, origem: nome, sim: x.score }));
@@ -526,7 +535,7 @@ $('#btSort').onclick = async () => {
         const v = porId[p.id] || {};
         LINHAS.push({ equipment: e.nome, basis: base === 'hist' ? `history ${p.data}` : '16-day forecast', source: p.origem,
           site: p.nome, lat: p.lat, lon: p.lon, similarity: p.sim, hours_ok_pct: v.horas_ok_pct, n_windows: v.n_janelas,
-          longest_window_h: v.maior_janela_h, first_window: v.primeira_janela,
+          longest_window_h: v.maior_janela_h, first_window: v.primeira_janela, main_limit: v.n_janelas > 0 ? '' : limTxt(v.principal_limite),
           result: v.erro ? 'error' : (v.n_janelas > 0 ? 'feasible' : (v.horas_ok_pct > 0 ? 'isolated hours only' : 'not feasible')) });
       });
     } catch (err) { errosS.push(`${e.nome}: ${err.message}`); $('#sMsg').textContent = 'Error: ' + err.message; }

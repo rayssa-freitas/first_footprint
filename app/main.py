@@ -62,6 +62,10 @@ COLS_EN = {
 }
 
 
+PERFIL_EN = {"marte_planicie": "mars_plains", "marte_polar": "mars_polar", "lua_polo_sul": "moon_south_pole", "lua_mare": "moon_mare"}
+VAL_EN = {"baixas_medias": "low_mid", "todas": "all", "baixas": "low"}
+
+
 def en(df):
     """Renames columns to English for CSV export (ok_<criterion>, score_<profile> and cob_<profile> keep their suffix)."""
     def nome(c):
@@ -69,11 +73,18 @@ def en(df):
         if c in COLS_EN:
             return COLS_EN[c]
         if c.startswith("score_"):
-            return "similarity_" + c[6:]
+            return "similarity_" + PERFIL_EN.get(c[6:], c[6:])
         if c.startswith("cob_"):
-            return "coverage_" + c[4:]
+            return "coverage_" + PERFIL_EN.get(c[4:], c[4:])
         return c
-    return df.rename(columns=nome)
+    df = df.rename(columns=nome)
+    for c in ("clouds_counted", "nuvem_tipo"):
+        if c in df:
+            df[c] = df[c].replace(VAL_EN)
+    for c in ("profile", "perfil"):
+        if c in df:
+            df[c] = df[c].replace(PERFIL_EN)
+    return df
 EQUIPAMENTOS = json.loads((DADOS / "equipamentos.json").read_text(encoding="utf-8"))
 CONHECIDOS = json.loads((DADOS / "analogos_conhecidos.json").read_text(encoding="utf-8"))
 
@@ -117,6 +128,7 @@ def candidatas(perfil: str = "marte_planicie", n: int = TOP_N_POR_PERFIL, so_rem
         raise HTTPException(404, "unknown profile")
     df = GRADE[GRADE["longe_cidades"]] if so_remotas else GRADE
     df = df.dropna(subset=[col]).sort_values(col, ascending=False).head(n)
+    df = df.dropna(axis=1, how="all").round(4)  # no empty columns, no 9-decimal noise
     return [limpar({"id": r.id, "lat": r.lat, "lon": r.lon, "score": round(getattr(r, col), 3),
                     "operacional": round(r.score_operacional, 3) if not math.isnan(r.score_operacional) else None,
                     "protegido": round(float(getattr(r, "protegido_pct", float("nan"))), 0)})
@@ -317,7 +329,7 @@ def exportar_candidatas(perfil: str = "marte_planicie", so_remotas: bool = True,
     col = f"score_{perfil}"
     df = GRADE[GRADE["longe_cidades"]] if so_remotas else GRADE
     df = df.dropna(subset=[col]).sort_values(col, ascending=False).head(n)
-    nome = f"candidates_{perfil}_{dt.datetime.now():%Y%m%d_%H%M}.csv"
+    nome = f"candidates_{PERFIL_EN.get(perfil, perfil)}_{dt.datetime.now():%Y%m%d_%H%M}.csv"
     en(df).to_csv(RESULTADOS / nome, **CSV_KW)
     return FileResponse(RESULTADOS / nome, media_type="text/csv", filename=nome)
 

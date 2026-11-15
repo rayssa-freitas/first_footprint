@@ -198,9 +198,18 @@ def previsao(eq: Equipamento):
         "nuvem_tipo": "low + mid (block the view of the ground)" if eq.nuvem_tipo != "todas" else "all (includes high cirrus)",
         "horas_ok_pct": round(100 * df["ok"].mean(), 1),
         "horas": horas[["hora_local", "ok", "temp_c", "vento_ms", "rajada_ms", "nuvem_pct", "chuva_mm_h",
-                        "visib_m", "elev_solar"] + [c for c in ("poeira_ugm3", "aod") if c in horas] + motivos]
+                        "visib_m", "elev_solar"] + [c for c in ("umidade_pct", "poeira_ugm3", "aod") if c in horas] + motivos]
         .round(2).to_dict("records"),
     }
+
+
+def _motivo(df):
+    """Criterion that fails most often (None when every hour is OK)."""
+    cs = [c for c in df.columns if c.startswith("ok_")]
+    if not cs or df["ok"].all():
+        return None
+    m = df[cs].mean().sort_values()
+    return m.index[0][3:]
 
 
 def previsao_lote(eq: Equipamento, pontos: list[dict]):
@@ -220,7 +229,8 @@ def previsao_lote(eq: Equipamento, pontos: list[dict]):
             jan = janelas(df, eq.duracao_h)
             out.append({**q, "horas_ok_pct": round(100 * df["ok"].mean(), 1), "n_janelas": len(jan),
                         "primeira_janela": jan[0]["inicio"] if jan else None,
-                        "maior_janela_h": max((x["horas"] for x in jan), default=0)})
+                        "maior_janela_h": max((x["horas"] for x in jan), default=0),
+                        "principal_limite": _motivo(df)})
     return out
 
 
@@ -306,6 +316,8 @@ def _periodo_valido(ini: dt.date, fim: dt.date):
     lim = fim_disponivel()
     if fim > lim:
         fim = lim
+    if ini < dt.date(2001, 1, 1):
+        raise ValueError("NASA POWER hourly data starts on 2001-01-01.")
     if ini > fim:
         raise ValueError(f"No data for this period: NASA POWER goes up to {lim:%Y-%m-%d}.")
     if (fim - ini).days > 366:
@@ -362,7 +374,8 @@ def simular_dias(eq: Equipamento, pontos: list[dict]):
             jan = janelas(out, e.duracao_h)
             res.append({**q, "horas_ok_pct": round(100 * out["ok"].mean(), 1), "n_janelas": len(jan),
                         "primeira_janela": jan[0]["inicio"] if jan else None,
-                        "maior_janela_h": max((x["horas"] for x in jan), default=0)})
+                        "maior_janela_h": max((x["horas"] for x in jan), default=0),
+                        "principal_limite": _motivo(out)})
         except Exception as ex:  # noqa
             res.append({**q, "erro": f"{type(ex).__name__}: {ex}"})
     return res
