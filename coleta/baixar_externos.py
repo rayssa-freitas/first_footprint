@@ -2,6 +2,10 @@
 Downloads global layers that need no login:
 - ETOPO 2022 60" (NOAA NCEI): elevation -> terrain, roughness, slope
 - GHSL GHS-POP 2020 30" (European Commission/JRC): population
+- GLiM 0.5° (Hartmann & Moosdorf 2012, PANGAEA, CC-BY 3.0): rock types (geology)
+- WDPA (UNEP-WCMC & IUCN, Protected Planet): protected areas — large (~1-2 GB);
+  if the automatic download fails, download the shapefile manually from
+  https://www.protectedplanet.net/en/thematic-areas/wdpa and put the .zip in dados/brutos/wdpa/
 
 Usage: python coleta/baixar_externos.py
 """
@@ -19,7 +23,10 @@ ARQUIVOS = {
     "ghsl/GHS_POP_E2020_GLOBE_R2023A_4326_30ss_V1_0.zip":
         "https://jeodpp.jrc.ec.europa.eu/ftp/jrc-opendata/GHSL/GHS_POP_GLOBE_R2023A/"
         "GHS_POP_E2020_GLOBE_R2023A_4326_30ss/V1-0/GHS_POP_E2020_GLOBE_R2023A_4326_30ss_V1_0.zip",
+    "glim/glim_0.5deg.zip": "https://hdl.handle.net/10013/epic.39939.d001",
 }
+WDPA_URL = "https://d1gam3xoknrgr2.cloudfront.net/current/WDPA_{mes}{ano}_Public_shp.zip"
+MESES_EN = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
 
 
 def arquivo_ok(caminho):
@@ -46,7 +53,7 @@ def baixar(rel, url):
     if dest.exists():
         print("incomplete/corrupted file, downloading again:", dest.name)
         dest.unlink()
-    print("downloading", dest.name, "(~450 MB, do not close the window)")
+    print("downloading", dest.name, "(may be large, do not close the window)")
     parcial = dest.with_suffix(dest.suffix + ".part")
     with requests.get(url, stream=True, timeout=60) as r:
         r.raise_for_status()
@@ -62,7 +69,34 @@ def baixar(rel, url):
     print("  done")
 
 
+def baixar_wdpa():
+    """WDPA changes name every month: tries this month and the two before."""
+    pasta = BRUTOS / "wdpa"
+    existentes = [f for ext in ("*.zip", "*.shp", "*.gpkg") for f in pasta.glob(ext)]
+    if existentes and all(arquivo_ok(f) for f in existentes if f.suffix == ".zip"):
+        print("already present: WDPA")
+        return
+    import datetime as dt
+    hoje = dt.date.today().replace(day=1)
+    for k in range(3):
+        d = (hoje - dt.timedelta(days=28 * k)).replace(day=1)
+        url = WDPA_URL.format(mes=MESES_EN[d.month - 1], ano=d.year)
+        try:
+            if requests.head(url, timeout=30, allow_redirects=True).status_code == 200:
+                baixar(f"wdpa/{url.rsplit('/', 1)[1]}", url)
+                return
+        except Exception:  # noqa
+            pass
+    print("  ! WDPA: automatic download not available. Download the shapefile at\n"
+          "    https://www.protectedplanet.net/en/thematic-areas/wdpa (Download > SHP)\n"
+          "    and save the .zip in", pasta)
+
+
 if __name__ == "__main__":
     for rel, url in ARQUIVOS.items():
-        baixar(rel, url)
+        try:
+            baixar(rel, url)
+        except Exception as e:  # noqa — one failing layer does not stop the others
+            print(f"\n  ! ERROR downloading {rel}: {type(e).__name__}: {e}")
+    baixar_wdpa()
     print("OK")

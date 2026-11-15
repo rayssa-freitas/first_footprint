@@ -16,6 +16,10 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import numpy as np
 import pandas as pd
 from config import DADOS, GRADE_PARQUET, POP_VIZ_MAX
+try:
+    from config import PROTEGIDO_MAX
+except ImportError:
+    PROTEGIDO_MAX = None
 
 REF = json.loads((DADOS / "referencias_planetarias.json").read_text(encoding="utf-8"))
 PERFIS = REF["perfis"]
@@ -71,6 +75,10 @@ def pontuar_todos(df):
     out["score_operacional"] = s
     pop = out.get("pop_viz_km2")
     out["longe_cidades"] = (pop <= POP_VIZ_MAX) if pop is not None and pop.notna().any() else True
+    # protected areas (WDPA): only excluded when PROTEGIDO_MAX is set in config.py
+    prot = out.get("protegido_pct")
+    if PROTEGIDO_MAX is not None and prot is not None and prot.notna().any():
+        out["longe_cidades"] = out["longe_cidades"] & ~(prot >= PROTEGIDO_MAX)
     return out
 
 
@@ -80,7 +88,7 @@ def explicar(linha, perfil_id):
     itens = []
     for v, p in perfil["variaveis"].items():
         val = linha.get(v, np.nan)
-        if val is None or (isinstance(val, float) and np.isnan(val)):
+        if val is None or pd.isna(val):
             itens.append({"variavel": v, "valor": None, "sim": None, "status": "sem dado",
                           "referencia": p["referencia"], "peso": p["peso"]})
             continue

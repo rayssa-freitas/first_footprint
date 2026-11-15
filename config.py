@@ -23,6 +23,11 @@ NLAT, NLON = int(180 / RES), int(360 / RES)
 # in the cell's 3x3 neighbourhood (people/km²) below this value.
 POP_VIZ_MAX = 5.0
 
+# Protected areas (WDPA): cells with at least this % inside a protected area are
+# removed from the candidates. None = only show a warning (NASA uses analogs inside
+# parks, e.g. Death Valley National Park), which is the default.
+PROTEGIDO_MAX = None
+
 # How many candidate cells to send to the globe per profile
 TOP_N_POR_PERFIL = 150
 

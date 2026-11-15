@@ -264,9 +264,137 @@ def somar_raster(caminho):
     return soma
 
 
+# ---------------- Geology (GLiM 0.5°) ----------------
+# GLiM first-level classes (Hartmann & Moosdorf 2012). The code number of each class
+# is read from the legend inside the zip when there is one; otherwise this default is used.
+GLIM_PADRAO = {"su": 1, "vb": 2, "ss": 3, "pb": 4, "sm": 5, "sc": 6, "va": 7, "mt": 8,
+               "pa": 9, "vi": 10, "wb": 11, "py": 12, "pi": 13, "ev": 14, "nd": 15, "ig": 16}
+GLIM_NOMES = {"su": "unconsolidated sediments", "vb": "basic volcanic (basalt)", "ss": "siliciclastic sedimentary",
+              "pb": "basic plutonic", "sm": "mixed sedimentary", "sc": "carbonate sedimentary",
+              "va": "acid volcanic", "mt": "metamorphic", "pa": "acid plutonic", "vi": "intermediate volcanic",
+              "wb": "water", "py": "pyroclastics", "pi": "intermediate plutonic", "ev": "evaporites",
+              "nd": "no data", "ig": "ice and glaciers"}
+
+
+def _legenda_glim(z):
+    """Looks for a 'code + abbreviation' legend in the zip text files."""
+    import re
+    leg = {}
+    for n in z.namelist():
+        if n.lower().endswith((".txt", ".csv", ".dat", ".xml")) and z.getinfo(n).file_size < 200_000:
+            txt = z.read(n).decode("latin-1", errors="ignore")
+            for a, b in re.findall(r"\b(\d{1,2})\s*[=:;,\t ]\s*([a-z]{2})\b", txt):
+                if b in GLIM_PADRAO:
+                    leg[b] = int(a)
+            for b, a in re.findall(r"\b([a-z]{2})\s*[=:;,\t ]\s*(\d{1,2})\b", txt):
+                if b in GLIM_PADRAO and b not in leg:
+                    leg[b] = int(a)
+    return leg if len(leg) >= 10 else {}
+
+
+def glim():
+    """% of each 1° cell covered by basalt, sediments and evaporites (dominant class of each 0.5° pixel)."""
+    print("GLiM (geology / rock types)")
+    nomes = ("basalto_pct", "sedimento_pct", "evaporito_pct", "vulcanica_pct")
+    fs = arquivos("glim", "*.zip") or arquivos("glim", "*.asc") or arquivos("glim", "*.tif")
+    if not fs:
+        return {k: vazio() for k in nomes}
+    import rasterio
+    caminho, leg = fs[0], {}
+    if fs[0].endswith(".zip"):
+        with zipfile.ZipFile(fs[0]) as z:
+            ras = [n for n in z.namelist() if n.lower().endswith((".asc", ".tif", ".tiff", ".flt", ".adf", ".nc"))]
+            if not ras:
+                print("  ! no raster inside the GLiM zip:", z.namelist()[:10])
+                return {k: vazio() for k in nomes}
+            leg = _legenda_glim(z)
+        caminho = f"/vsizip/{Path(fs[0]).resolve().as_posix()}/{ras[0]}"
+    cod = leg or GLIM_PADRAO
+    print("  legend used:", "from the zip" if leg else "default (check it against the GLiM documentation)",
+          {k: cod[k] for k in ("su", "vb", "ss", "sm", "ev", "va", "vi", "py")})
+    with rasterio.open(caminho) as src:
+        v = src.read(1)
+        T = src.transform
+        nod = src.nodata
+    lat_c = T.f + (np.arange(v.shape[0]) + 0.5) * T.e
+    lon_c = T.c + (np.arange(v.shape[1]) + 0.5) * T.a
+    ii = np.clip(((90 - lat_c) / RES).astype(int), 0, NLAT - 1)
+    jj = np.clip(((lon_c + 180) / RES).astype(int), 0, NLON - 1)
+    idx = (ii[:, None] * NLON + jj[None, :]).ravel()
+    v = v.ravel()
+    valido = (v != nod) if nod is not None else np.ones_like(v, bool)
+    valido &= (v != cod["wb"]) & (v != cod["nd"]) & (v > 0)
+    total = np.bincount(idx[valido], minlength=NLAT * NLON).reshape(NLAT, NLON).astype("float32")
+    total[total == 0] = np.nan
+
+    def pct(*classes):
+        m = valido & np.isin(v, [cod[c] for c in classes])
+        return 100 * np.bincount(idx[m], minlength=NLAT * NLON).reshape(NLAT, NLON) / total
+
+    return {"basalto_pct": pct("vb"), "sedimento_pct": pct("su", "ss", "sm"),
+            "evaporito_pct": pct("ev"), "vulcanica_pct": pct("vb", "va", "vi", "py")}
+
+
+# ---------------- Protected areas (WDPA) ----------------
+def _camadas_wdpa():
+    """Paths (GDAL syntax) of every polygon layer of the WDPA, inside zips or loose."""
+    pasta = BRUTOS / "wdpa"
+    out = [f.resolve().as_posix() for ext in ("*.shp", "*.gpkg") for f in pasta.glob(ext)
+           if "point" not in f.name.lower()]
+    for z in pasta.glob("*.zip"):
+        zp = z.resolve().as_posix()
+        with zipfile.ZipFile(z) as zz:
+            for n in zz.namelist():
+                low = n.lower()
+                if low.endswith(".shp") and "point" not in low:
+                    out.append(f"/vsizip/{zp}/{n}")
+                elif low.endswith(".zip"):  # Protected Planet ships 3 zips inside the zip
+                    import io
+                    with zipfile.ZipFile(io.BytesIO(zz.read(n))) as inner:
+                        for m in inner.namelist():
+                            if m.lower().endswith(".shp") and "point" not in m.lower():
+                                out.append(f"/vsizip/{{/vsizip/{zp}/{n}}}/{m}")
+    return out
+
+
+def wdpa():
+    """% of each 1° cell inside a protected area (rasterized at 0.05°)."""
+    print("WDPA (protected areas)")
+    camadas = _camadas_wdpa() if (BRUTOS / "wdpa").exists() else []
+    if not camadas:
+        print("  ! no files in brutos/wdpa — protected-area layer will be empty")
+        return {"protegido_pct": vazio()}
+    import fiona
+    from rasterio import features
+    from rasterio.transform import from_origin
+    fator = 20
+    grade = np.zeros((NLAT * fator, NLON * fator), dtype="uint8")
+    T = from_origin(-180, 90, RES / fator, RES / fator)
+    n = 0
+    for cam in camadas:
+        with fiona.open(cam) as src:
+            lote = []
+            for feat in src:
+                pr = feat["properties"]
+                if str(pr.get("STATUS", "")).lower() == "proposed" or str(pr.get("MARINE", "0")) == "2":
+                    continue
+                if feat["geometry"] is None:
+                    continue
+                lote.append((feat["geometry"], 1))
+                if len(lote) >= 5000:
+                    features.rasterize(lote, out=grade, transform=T)
+                    n += len(lote)
+                    lote = []
+            if lote:
+                features.rasterize(lote, out=grade, transform=T)
+                n += len(lote)
+        print(f"  {n} areas so far ({Path(cam).name})")
+    return {"protegido_pct": 100 * blocos(grade.astype("float32"), fator)}
+
+
 def montar():
     camadas = {}
-    for f in (mcd12, mod08, mod13, mod11, merra, etopo, ghsl, rebanhos):
+    for f in (mcd12, mod08, mod13, mod11, merra, etopo, ghsl, rebanhos, glim, wdpa):
         try:
             camadas.update(f())
         except Exception as e:  # noqa — one failing layer does not break the grid

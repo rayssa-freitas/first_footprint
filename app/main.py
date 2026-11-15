@@ -56,7 +56,9 @@ COLS_EN = {
     "rugosidade_m": "roughness_m", "declividade_graus": "slope_deg", "pop_total": "population",
     "pop_dens_km2": "population_density_km2", "pop_viz_km2": "neighbourhood_population_km2",
     "rebanho_dens_km2": "livestock_density_km2", "abs_lat": "abs_lat", "score_operacional": "operational_score",
-    "longe_cidades": "away_from_cities",
+    "longe_cidades": "away_from_cities", "protegido_pct": "protected_area_pct",
+    "basalto_pct": "basalt_pct", "sedimento_pct": "sediment_pct", "evaporito_pct": "evaporite_pct",
+    "vulcanica_pct": "volcanic_pct",
 }
 
 
@@ -116,7 +118,8 @@ def candidatas(perfil: str = "marte_planicie", n: int = TOP_N_POR_PERFIL, so_rem
     df = GRADE[GRADE["longe_cidades"]] if so_remotas else GRADE
     df = df.dropna(subset=[col]).sort_values(col, ascending=False).head(n)
     return [limpar({"id": r.id, "lat": r.lat, "lon": r.lon, "score": round(getattr(r, col), 3),
-                    "operacional": round(r.score_operacional, 3) if not math.isnan(r.score_operacional) else None})
+                    "operacional": round(r.score_operacional, 3) if not math.isnan(r.score_operacional) else None,
+                    "protegido": round(float(getattr(r, "protegido_pct", float("nan"))), 0)})
             for r in df.itertuples()]
 
 

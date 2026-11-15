@@ -64,6 +64,18 @@
           "pior": 1013,
           "peso": 1,
           "referencia": "6.36 hPa (NASA Mars Fact Sheet) — Earth is >90x higher"
+        },
+        "sedimento_pct": {
+          "ideal": 80,
+          "pior": 0,
+          "peso": 1,
+          "referencia": "Gale and Jezero: layered sedimentary rocks deposited by ancient water (MSL/Mars 2020)"
+        },
+        "evaporito_pct": {
+          "ideal": 25,
+          "pior": 0,
+          "peso": 1,
+          "referencia": "Sulfate and salt deposits found by Curiosity in Gale (MSL)"
         }
       }
     },
@@ -112,6 +124,12 @@
           "pior": 1,
           "peso": 1,
           "referencia": "Active wind processes"
+        },
+        "sedimento_pct": {
+          "ideal": 80,
+          "pior": 0,
+          "peso": 1,
+          "referencia": "Loose soil over ground ice at the Phoenix site"
         }
       }
     },
@@ -208,6 +226,12 @@
           "pior": 15,
           "peso": 1,
           "referencia": "Lunar maria: flat, with small craters"
+        },
+        "basalto_pct": {
+          "ideal": 75,
+          "pior": 0,
+          "peso": 3,
+          "referencia": "Lunar maria are basalt plains (Apollo 11/15 samples)"
         }
       }
     }
@@ -306,6 +330,16 @@
       "texto": "The 1° grid (~110 km) is for screening; the exact spot needs a 30 m DEM and a field visit",
       "fonte": "Product resolution (MOD08_M3 1°, MERRA-2 0.5°×0.625°)",
       "url": "https://ladsweb.modaps.eosdis.nasa.gov/missions-and-measurements/products/MOD08_M3"
+    },
+    {
+      "texto": "Geology from GLiM at 0.5° (dominant rock type per pixel): mapped regionally at different scales",
+      "fonte": "Hartmann & Moosdorf (2012), GLiM — PANGAEA",
+      "url": "https://doi.org/10.1594/PANGAEA.788537"
+    },
+    {
+      "texto": "Protected areas from the WDPA are shown as a warning; military areas and indigenous lands are not covered",
+      "fonte": "UNEP-WCMC & IUCN — Protected Planet (WDPA)",
+      "url": "https://www.protectedplanet.net/en/thematic-areas/wdpa"
     }
   ]
 }

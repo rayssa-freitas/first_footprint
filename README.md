@@ -60,7 +60,7 @@ The repo is ready for Vercel: `index.py` exposes the app, `requirements.txt` has
   - **History**: any period since 2001, hour by hour;
   - **Random draw**: up to 40 random tests across sites, equipment and real days.
 - Every run shows a *Processing → Complete* pop-up and writes CSVs (with English column names) to `dados/resultados`.
-- Accessibility: full keyboard use, screen-reader announcements, colour-blind-safe colors.
+- Accessibility: full keyboard use, screen-reader announcements, colour-blind-safe colors, visual-only feedback (no sound needed) and a responsive layout for phones and tablets.
 
 ## Data
 
@@ -75,6 +75,8 @@ The repo is ready for Vercel: `index.py` exposes the app, `requirements.txt` has
 | Dust | MERRA-2 M2TMNXAER | NASA GES DISC (Earthdata) |
 | Elevation, slope, roughness | ETOPO 2022 60" | NOAA NCEI |
 | Population | GHSL GHS-POP 2020 | European Commission (JRC) |
+| Geology (basalt, sediments, evaporites) | GLiM 0.5° (Hartmann & Moosdorf 2012) | PANGAEA, CC-BY 3.0 |
+| Protected areas (warning) | WDPA | UNEP-WCMC & IUCN, Protected Planet |
 | Wildlife (records) | GBIF API | GBIF |
 | Livestock (optional) | FAO GLW | FAO — download manually to `dados/brutos/glw/*.tif` |
 | 16-day hourly forecast | Open-Meteo (ECMWF, GFS, ICON) | weather services |
@@ -87,7 +89,8 @@ The repo is ready for Vercel: `index.py` exposes the app, `requirements.txt` has
 - 1° grid (~110 km): good for global screening, not for picking the exact landing spot. Local detail → 30 m DEM and a field visit.
 - Moon/Mars references are published values (fact sheets, Diviner etc.), not processed PDS files.
 - **CO₂ is not in the model**: it varies only a few ppm across Earth (NOAA GML), so it does not distinguish analogs; Mars is ~95% CO₂.
-- No geology/lithology map (basalt): `arido_pct` is a proxy. Next step: GLiM or USGS maps, ASTER/EMIT mineralogy.
+- Geology comes from GLiM at 0.5° (dominant rock type per pixel). Detailed mineralogy (ASTER/EMIT) is a next step.
+- Protected areas (WDPA) are shown as a warning; set `PROTEGIDO_MAX` in config.py to exclude them. Military areas and indigenous lands are not covered.
 - GBIF counts records (sampling bias), not animal density.
 - Gravity, vacuum, Martian pressure and radiation cannot be reproduced on Earth.
 - Hourly history has no gust, visibility or dust; those only apply to the forecast.

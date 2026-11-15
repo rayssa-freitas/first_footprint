@@ -1,4 +1,4 @@
-const VERSAO = 'v14';
+const VERSAO = 'v16';
 // ---------- utilities ----------
 const $ = (s) => document.querySelector(s);
 const api = async (url, opt) => {
@@ -13,7 +13,8 @@ const VAR_EN = { ndvi_max: 'max NDVI (vegetation)', ndvi_medio: 'mean NDVI', pre
   lst_dia_c: 'day surface temperature (°C)', lst_noite_c: 'night surface temperature (°C)', arido_pct: 'barren land (%)', poeira_ugm3: 'dust (µg/m³)',
   nuvem_frac: 'cloud fraction', pressao_hpa: 'pressure (hPa)', t2m_c: 'air temperature (°C)', vento_medio_ms: 'mean wind (m/s)', vento_max_ms: 'max wind (m/s)',
   abs_lat: 'absolute latitude (°)', rugosidade_m: 'terrain roughness (m)', declividade_graus: 'slope (°)', aod_550: 'aerosol optical depth (AOD 550)',
-  elev_m: 'elevation (m)', gelo_pct: 'snow/ice (%)', pop_dens_km2: 'population density (/km²)', pop_viz_km2: 'neighbourhood population (/km²)' };
+  elev_m: 'elevation (m)', protegido_pct: 'protected area (%)', basalto_pct: 'basalt',
+  vulcanica_pct: 'all volcanic rocks', sedimento_pct: 'sediments (loose + sedimentary rock)', evaporito_pct: 'evaporites (salts, sulfates)', gelo_pct: 'snow/ice (%)', pop_dens_km2: 'population density (/km²)', pop_viz_km2: 'neighbourhood population (/km²)' };
 const vn = k => VAR_EN[k] || k;
 const STATUS_EN = { forte: 'strong', parcial: 'partial', falha: 'fails', 'sem dado': 'no data' };
 const fmt = (v, d = 2) => (v === null || v === undefined || Number.isNaN(v)) ? '—' : (+v).toFixed(d);
@@ -62,6 +63,28 @@ function octogono(lat, lon, raioGraus, props) {
   return { type: 'Feature', properties: props, geometry: { type: 'Polygon', coordinates: [coords] } };
 }
 
+// ---------- layout: side panel (desktop) or bottom sheet (phone/tablet) ----------
+const MOBILE = () => window.matchMedia('(max-width: 900px)').matches;
+function larguraGlobo() { return MOBILE() ? window.innerWidth : window.innerWidth - 420; }
+function alturaGlobo() {
+  if (!MOBILE()) return window.innerHeight;
+  const topoPainel = document.querySelector('#painel')?.getBoundingClientRect().top || window.innerHeight * 0.48;
+  return Math.max(200, topoPainel);
+}
+function ajustarGlobo() { if (typeof world !== 'undefined' && world) world.width(larguraGlobo()).height(alturaGlobo()); }
+document.addEventListener('DOMContentLoaded', () => {
+  const bt = document.querySelector('#btPainel');
+  if (!bt) return;
+  bt.addEventListener('click', () => {
+    const fechado = document.querySelector('#painel').classList.toggle('recolhido');
+    document.body.classList.toggle('painelFechado', fechado);
+    bt.setAttribute('aria-expanded', String(!fechado));
+    bt.querySelector('span:last-child').textContent = fechado ? 'Show panel' : 'Hide panel';
+    bt.querySelector('span').textContent = fechado ? '▲' : '▼';
+    setTimeout(ajustarGlobo, 260);
+  });
+});
+
 // ---------- globe ----------
 const el = $('#globo');
 let world;
@@ -70,7 +93,7 @@ world
   .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg')   // NASA Blue Marble
   .bumpImageUrl('https://unpkg.com/three-globe/example/img/earth-topology.png')
   .backgroundImageUrl('https://unpkg.com/three-globe/example/img/night-sky.png')
-  .width(window.innerWidth - 420).height(window.innerHeight)
+  .width(larguraGlobo()).height(alturaGlobo())
   .polygonAltitude(d => d.properties.tipo === 'regiao' ? 0.004 : 0.012)
   .polygonCapColor(d => corCelula(d.properties))
   .polygonSideColor(() => 'rgba(0,0,0,0.25)')
@@ -79,6 +102,7 @@ world
     if (p.tipo === 'regiao') return 'Marked region';
     let t = `<b>${fmt(p.lat,1)}°, ${fmt(p.lon,1)}°</b>`;
     if (p.score !== undefined) t += `<br>similarity ${fmt(p.score)} · operational ${fmt(p.operacional ?? p.score_operacional)}`;
+    if (p.protegido > 0) t += `<br>⚠ ${fmt(p.protegido, 0)}% protected area (WDPA)`;
     if (p.viab_txt) t += `<br>${p.viab_txt}`;
     return t; })
   .onPolygonClick(d => { const p = d.properties;
@@ -89,7 +113,7 @@ world
   .labelLabel(d => `<b>${d.nome}</b><br>${d.uso}<br>profile score: ${fmt(d.score)}`)
   .onLabelClick(d => d.celula && abrirCelula(d.celula))
   .onGlobeClick(({ lat, lng }) => { if ($('#modoRegiao').checked) marcarRegiao(lat, lng); else { definirPonto(lat, lng); pontoLivre(lat, lng); } });
-window.addEventListener('resize', () => world.width(window.innerWidth - 420).height(window.innerHeight));
+window.addEventListener('resize', ajustarGlobo);
 
 let camadaCand = [], camadaRegiao = [], camadaPonto = [], camadaSim = [];
 let TEM_GRADE = false;
@@ -146,7 +170,7 @@ async function carregar() {
   redesenhar();
   $('#csvCand').href = `/api/export/candidatas.csv?perfil=${perfil()}&so_remotas=true`;
   $('#listaCand').innerHTML = cand.slice(0, 60).map(c =>
-    `<li data-id="${c.id}"><button type="button" class="linkLista">${fmt(c.lat,1)}°, ${fmt(c.lon,1)}° — similarity ${fmt(c.score)} · operational ${fmt(c.operacional)}</button></li>`).join('')
+    `<li data-id="${c.id}"><button type="button" class="linkLista">${fmt(c.lat,1)}°, ${fmt(c.lon,1)}° — similarity ${fmt(c.score)} · operational ${fmt(c.operacional)}${c.protegido >= 10 ? ` · ⚠ ${fmt(c.protegido, 0)}% protected` : ''}</button></li>`).join('')
     || (TEM_GRADE ? '<p class="aviso">No scored cells for this profile. Check the variables with no data at the top.</p>' : SEM_GRADE);
   document.querySelectorAll('#listaCand li').forEach(li => li.onclick = () => abrirCelula(li.dataset.id, true));
   const conh = await api(`/api/conhecidos?perfil=${perfil()}`);
@@ -168,13 +192,18 @@ async function abrirCelula(id, voar = false) {
       <td class="${i.status.replace(' ', '')}">${STATUS_EN[i.status] || i.status}${i.sim !== null ? ` (${i.sim})` : ''}</td>
       <td><small>${i.referencia}</small></td></tr>`).join('');
   const extras = ['t2m_c','lst_dia_c','lst_noite_c','vento_medio_ms','vento_max_ms','poeira_ugm3','aod_550',
-    'elev_m','declividade_graus','rugosidade_m','gelo_pct','pop_dens_km2','pop_viz_km2']
+    'elev_m','declividade_graus','rugosidade_m','gelo_pct','pop_dens_km2','pop_viz_km2','protegido_pct']
     .filter(k => k in d).map(k => `<tr><td>${vn(k)}</td><td>${fmt(d[k])}</td></tr>`).join('');
+  const geo = ['basalto_pct','vulcanica_pct','sedimento_pct','evaporito_pct']
+    .filter(k => d[k] !== null && d[k] !== undefined).map(k => `<tr><td>${vn(k)}</td><td>${fmt(d[k], 0)}%</td></tr>`).join('')
+    || `<tr><td colspan="2"><small>not downloaded yet (run coleta\\baixar_externos.py)</small></td></tr>`;
+  const avisoProt = d.protegido_pct > 0 ? `<p class="aviso">⚠ <b>${fmt(d.protegido_pct, 0)}%</b> of this cell is a protected area (WDPA). Field tests there need a permit from the park authority.</p>` : '';
   $('#selecionado').innerHTML = `
     <b>Selected octagon:</b> ${fmt(d.lat,2)}°, ${fmt(d.lon,2)}° · cell ${d.id}<br>
     Similarity <b>${fmt(sc)}</b> <span class="barra"><i style="width:${(sc||0)*100}%"></i></span>
     Operational <b>${fmt(d.score_operacional)}</b> · ${d.longe_cidades ? 'no significant human occupation' : 'near human occupation'}<br>
     <small><span class="forte">strong:</span> ${chip('forte')} · <span class="parcial">partial:</span> ${chip('parcial')} · <span class="falha">fails:</span> ${chip('falha')}</small>
+    ${avisoProt}
     <details><summary>Full analog analysis</summary>
       <table><tr><th>variable</th><th>value</th><th>status</th><th>reference</th></tr>${linhas}</table>
       <h3>Differences Earth cannot reproduce</h3>
@@ -184,6 +213,7 @@ async function abrirCelula(id, voar = false) {
       <h3>Biological occupation</h3>
       <p>${r.fauna.registros_animais ?? '—'} animal records (GBIF). <small>${r.fauna.nota || r.fauna.erro || ''}</small></p>
       <h3>Other variables</h3><table>${extras}</table>
+      <h3>Geology (GLiM)</h3><table>${geo}</table>
     </details>`;
 }
 
