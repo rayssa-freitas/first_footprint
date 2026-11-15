@@ -1,4 +1,4 @@
-const VERSAO = 'v18';
+const VERSAO = 'v18.1';
 // ---------- utilities ----------
 const $ = (s) => document.querySelector(s);
 const api = async (url, opt) => {
@@ -496,7 +496,7 @@ async function poolPontos() {
     if (o === 'terra') {
       for (const t of TERRA) {
         let sim = null;
-        try { const r = await api(`/api/regiao?lat=${t.lat}&lon=${t.lon}&raio_km=120&perfil=${perfil()}`); if (r.celulas && r.celulas.length) sim = r.celulas[0].score; } catch (e) {}
+        try { const r = await api(`/api/regiao?lat=${t.lat}&lon=${t.lon}&raio_km=120&perfil=${perfil()}`); if (r.celulas && r.celulas.length) sim = +(+r.celulas[0].score).toFixed(3); } catch (e) {}
         pool.push({ ...t, origem: 'Favorable Earth site', sim });
       }
       continue;

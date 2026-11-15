@@ -128,7 +128,6 @@ def candidatas(perfil: str = "marte_planicie", n: int = TOP_N_POR_PERFIL, so_rem
         raise HTTPException(404, "unknown profile")
     df = GRADE[GRADE["longe_cidades"]] if so_remotas else GRADE
     df = df.dropna(subset=[col]).sort_values(col, ascending=False).head(n)
-    df = df.dropna(axis=1, how="all").round(4)  # no empty columns, no 9-decimal noise
     return [limpar({"id": r.id, "lat": r.lat, "lon": r.lon, "score": round(getattr(r, col), 3),
                     "operacional": round(r.score_operacional, 3) if not math.isnan(r.score_operacional) else None,
                     "protegido": round(float(getattr(r, "protegido_pct", float("nan"))), 0)})
@@ -329,6 +328,7 @@ def exportar_candidatas(perfil: str = "marte_planicie", so_remotas: bool = True,
     col = f"score_{perfil}"
     df = GRADE[GRADE["longe_cidades"]] if so_remotas else GRADE
     df = df.dropna(subset=[col]).sort_values(col, ascending=False).head(n)
+    df = df.dropna(axis=1, how="all").round(4)  # no empty columns, no 9-decimal noise
     nome = f"candidates_{PERFIL_EN.get(perfil, perfil)}_{dt.datetime.now():%Y%m%d_%H%M}.csv"
     en(df).to_csv(RESULTADOS / nome, **CSV_KW)
     return FileResponse(RESULTADOS / nome, media_type="text/csv", filename=nome)
